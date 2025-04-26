@@ -27,7 +27,7 @@ app.post("/webhook", async (req, res) => {
     const paymentDetails = {
       payment_id: payment.id,
       order_id: payment.order_id,
-      amount: payment.amount/ 100,
+      amount: payment.amount / 100,
       currency: payment.currency,
       status: payment.status,
       method: payment.method,
@@ -119,7 +119,7 @@ app.post("/webhook", async (req, res) => {
       .replace("{{payment_method}}", paymentDetails.method)
       .replace(
         "{{ebook_link}}",
-        "https://drive.google.com/drive/folders/1lBspZxXW5dyDv_vYPQDUYIpXo6hN22tL?usp=sharing"
+        paymentDetails.amount == 199 ? "https://drive.google.com/drive/folders/1lBspZxXW5dyDv_vYPQDUYIpXo6hN22tL?usp=sharing" : "https://drive.google.com/drive/folders/1xxSeKwIpO6LfesLFVpks9ZWzHX4G0tOC?usp=sharing"
       )
       .replace("{{year}}", new Date().getFullYear());
 
