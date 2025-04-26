@@ -27,7 +27,7 @@ app.post("/webhook", async (req, res) => {
     const paymentDetails = {
       payment_id: payment.id,
       order_id: payment.order_id,
-      amount: payment.amount,
+      amount: payment.amount/ 100,
       currency: payment.currency,
       status: payment.status,
       method: payment.method,
