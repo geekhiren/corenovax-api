@@ -1,8 +1,0 @@
-[build]
-  functions = "."  # This points to the root directory, where your webhook.js is located.
-
-[[redirects]]
-  force = true
-  from = "/webhook"
-  status = 200
-  to = "/.netlify/functions/webhook"  # This will point to the webhook.js function in the root directory

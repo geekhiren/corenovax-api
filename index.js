@@ -5,6 +5,10 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+
 app.get("/", (req, res) => {
   res.send("Express API is live 🚀");
 });
@@ -14,47 +18,40 @@ app.post("/webhook", async (req, res) => {
     const payload = req.body;
     console.log("Webhook received:", JSON.stringify(payload, null, 2));
 
-    // Check event type
     if (payload.event !== "payment.captured") {
       return res.status(400).send("Not a payment captured event.");
     }
 
     const payment = payload.payload.payment.entity;
 
-    // Extract important fields safely
     const paymentDetails = {
       payment_id: payment.id,
-      order_id: payment.order_id || "N/A",
-      amount: payment.amount / 100, // Convert paise to INR
+      order_id: payment.order_id,
+      amount: payment.amount,
       currency: payment.currency,
       status: payment.status,
       method: payment.method,
-      email: payment.email || "no-email@example.com",
-      contact: payment.contact || "N/A",
-      created_at: new Date(payment.created_at * 1000).toLocaleString(), // Unix to readable
-      bank:
-        payment.bank ||
-        payment.card?.network ||
-        payment.wallet ||
-        payment.vpa ||
-        "N/A",
+      email: payment.email,
+      contact: payment.contact,
+      created_at: new Date(payment.created_at * 1000).toLocaleString(),
     };
 
     console.log("Extracted Payment Details:", paymentDetails);
 
     let htmlTemplate = require("fs").readFileSync("mailOptions.html", "utf-8");
 
-    // Replace placeholders
     htmlTemplate = htmlTemplate
-      .replace("{{order_id}}", orderId)
-      .replace("{{amount}}", amount)
-      .replace("{{currency}}", currency)
-      .replace("{{payment_date}}", paymentDate)
-      .replace("{{payment_method}}", method)
-      .replace("{{ebook_link}}", ebookLink)
+      .replace("{{order_id}}", paymentDetails.order_id)
+      .replace("{{amount}}", paymentDetails.amount)
+      .replace("{{currency}}", paymentDetails.currency)
+      .replace("{{payment_date}}", paymentDetails.created_at)
+      .replace("{{payment_method}}", paymentDetails.method)
+      .replace(
+        "{{ebook_link}}",
+        "https://drive.google.com/drive/folders/1lBspZxXW5dyDv_vYPQDUYIpXo6hN22tL?usp=sharing"
+      )
       .replace("{{year}}", new Date().getFullYear());
 
-    // Send email only if captured
     if (paymentDetails.status === "captured") {
       await sendSuccessEmail(paymentDetails, htmlTemplate);
       console.log("Success email sent");
@@ -71,17 +68,19 @@ app.post("/webhook", async (req, res) => {
 
 async function sendSuccessEmail(payment, htmlContent) {
   const transporter = nodemailer.createTransport({
-    service: "gmail", // Or any other SMTP (Outlook, Zoho, etc.)
+    host: "smtpout.secureserver.net", // or smtp.secureserver.net
+    port: 465,
+    secure: true,
     auth: {
-      user: "reformcontrol@gmail.com",
-      pass: "ckgfbpshbtpmbfoa", // For Gmail, use App Password
+      user: "support@reformsol.com",
+      pass: "ShopLegs@8055", // For Gmail, use App Password
     },
   });
 
   const mailOptions = {
-    from: '"Reformsol" reformcontrol@gmail.com',
+    from: '"REFORMSOL" support@reformsol.com',
     to: payment.email,
-    subject: `Payment Successful - ₹${(payment.amount / 100).toFixed(2)}`,
+    subject: `Thank You for Your Purchase!`,
     html: htmlContent,
   };
 
